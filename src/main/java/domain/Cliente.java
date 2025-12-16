@@ -2,12 +2,32 @@ package domain;
 
 import java.util.Objects;
 
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "cliente")
 public class Cliente {
 	
+	
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
+	
+	@Column(name = "nome", nullable = false, length = 100)
 	private String nome;
+	
+	@Column(name = "email",length = 100)
 	private String email;
+	
+	@Column(name = "telefone",length = 100)
 	private String telefone;
+	
 	
 	public Cliente() {
 		
@@ -77,9 +97,9 @@ public class Cliente {
 		if (getClass() != obj.getClass())
 			return false;
 		Cliente other = (Cliente) obj;
-		return Objects.equals(email, other.email) && Objects.equals(id, other.id) && Objects.equals(nome, other.nome)
-				&& Objects.equals(telefone, other.telefone);
+		return Objects.equals(id, other.id);
 	}
+
 	
 	
 	
