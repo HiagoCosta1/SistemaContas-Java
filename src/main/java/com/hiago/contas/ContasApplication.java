@@ -3,7 +3,7 @@ package com.hiago.contas;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import domain.Cliente;
+import com.hiago.contas.domain.Cliente;
 
 @SpringBootApplication
 public class ContasApplication {

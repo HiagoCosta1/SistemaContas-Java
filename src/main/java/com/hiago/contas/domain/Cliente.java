@@ -1,6 +1,7 @@
-package domain;
+package com.hiago.contas.domain;  // ✅ CORRETO
 
 import java.util.Objects;
+
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -10,8 +11,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "usuario")
-public class Usuario {
+@Table(name = "cliente")
+public class Cliente {
+	
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,21 +22,22 @@ public class Usuario {
 	@Column(name = "nome", nullable = false, length = 100)
 	private String nome;
 	
-	@Column(name = "email",unique = true, nullable = false, length = 100)
+	@Column(name = "email",length = 100)
 	private String email;
 	
-	@Column(name = "senha",nullable = false, length = 255)
-	private String senha;
-
-	public Usuario() {
+	@Column(name = "telefone",length = 100)
+	private String telefone;
+	
+	
+	public Cliente() {
 		
 	}
 
-	public Usuario(String nome, String email, String senha) {
+	public Cliente(String nome, String email, String telefone) {
 		super();
 		this.nome = nome;
 		this.email = email;
-		this.senha = senha;
+		this.telefone = telefone;
 	}
 
 	public Long getId() {
@@ -61,21 +64,22 @@ public class Usuario {
 		this.email = email;
 	}
 
-	public String getSenha() {
-		return senha;
+	public String getTelefone() {
+		return telefone;
 	}
 
-	public void setSenha(String senha) {
-		this.senha = senha;
+	public void setTelefone(String telefone) {
+		this.telefone = telefone;
 	}
 	
 	
 	@Override
 	public String toString() {
-		return "Usuario {" +
+		return "Cliente {" +
 				"id = " + id + '\'' +
 				", nome = " + nome + '\'' +
 				", email = " + email + '\'' +
+				", telefone = " + telefone + '\'' +
 				"}";
 	}
 
@@ -92,11 +96,12 @@ public class Usuario {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		Usuario other = (Usuario) obj;
+		Cliente other = (Cliente) obj;
 		return Objects.equals(id, other.id);
 	}
-	
-	
-	
-}
 
+	
+	
+	
+
+}
