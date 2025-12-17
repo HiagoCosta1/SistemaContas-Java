@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import com.hiago.contas.domain.pagamento.MeioDePagamento;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -35,7 +37,7 @@ public class PDV {
 	private List<ItemVenda> itens = new ArrayList<>();
 	
 	@Column(name = "meio_pagamento", length = 50)
-	private String meioPagamento;
+	private MeioDePagamento mdp;
 	
 	@Column(name = "data_hora", nullable = false)
 	private LocalDateTime dataHora;
@@ -50,10 +52,10 @@ public class PDV {
 	}
 
 
-	public PDV(Cliente cliente, String meioPagamento) {
+	public PDV(Cliente cliente, MeioDePagamento mdp) {
 		this.cliente = cliente;
 		this.itens = new ArrayList<>();
-		this.meioPagamento = meioPagamento;
+		this.mdp = mdp;
 		this.dataHora = LocalDateTime.now();
 		this.valorTotal = BigDecimal.ZERO;
 	}
@@ -101,13 +103,13 @@ public class PDV {
 	}
 
 
-	public String getMeioPagamento() {
-		return meioPagamento;
+	public MeioDePagamento getMdp() {
+		return mdp;
 	}
 
 
-	public void setMeioPagamento(String meioPagamento) {
-		this.meioPagamento = meioPagamento;
+	public void setMeioPagamento(MeioDePagamento mdp) {
+		this.mdp = mdp;
 	}
 
 
@@ -149,7 +151,7 @@ public class PDV {
                 ", produtos=" + listaProdutos +
                 ", total=R$ " + valorTotal +
                 ", data=" + dataHora.format(formatter) +
-                ", meioDePagamento=" + meioPagamento +
+                ", meioDePagamento=" + mdp +
                 '}';
     }
 
