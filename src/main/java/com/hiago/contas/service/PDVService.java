@@ -35,16 +35,16 @@ public class PDVService {
 		return pdvRepository.findByDataHoraBetween(inicio, fim);
 	}
 	
-	public PDV criarVenda(Cliente cliente, MeioDePagamento mdp) {
-		PDV venda = new PDV(cliente, mdp);
-		return pdvRepository.save(venda);
+	public PDV criarVenda(Cliente cliente, MeioDePagamento mdp) {					
+		PDV venda = new PDV(cliente, mdp);													//instancio uma nova venda
+		return pdvRepository.save(venda);													// salvo ela no banco
 	}
 	
 	public PDV adicionarProduto(Long vendaId, Produto produto, Integer quantidade) {
-		Optional<PDV> vendaOpt = pdvRepository.findById(vendaId);
-		if(vendaOpt.isPresent()) {
-			PDV venda = vendaOpt.get();
-			venda.adicionarProduto(produto, quantidade);
+		Optional<PDV> vendaOpt = pdvRepository.findById(vendaId);							//busco pelo id no banco	
+		if(vendaOpt.isPresent()) {															//verifico se ele de fato existe
+			PDV venda = vendaOpt.get();														//pego as informações e adiciono em uma variavel venda	
+			venda.adicionarProduto(produto, quantidade);									//uso o metodo adicionarProduto para colocar o produto e quantidade na venda
 			return pdvRepository.save(venda);		
 		}
 		throw new RuntimeException("Venda nao encontrada!");
@@ -53,9 +53,9 @@ public class PDVService {
 	
 	public PDV finalizarVenda(Long vendaId) {
 		Optional<PDV> vendaOpt = pdvRepository.findById(vendaId);
-		if(vendaOpt.isPresent()) {
-			PDV venda = vendaOpt.get();
-			venda.calcularTotal();
+		if(vendaOpt.isPresent()) {	
+			PDV venda = vendaOpt.get();														
+			venda.calcularTotal();															//faço o processo de buscar a venda pelo id e depois uso o metodo calcularTotal para salvar na venda
 			return pdvRepository.save(venda);
 		}
 		throw new RuntimeException("Venda nao encontrada!");
