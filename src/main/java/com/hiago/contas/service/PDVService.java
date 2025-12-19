@@ -40,6 +40,10 @@ public class PDVService {
 		return pdvRepository.save(venda);													// salvo ela no banco
 	}
 	
+	public PDV salvar(PDV venda) {
+	    return pdvRepository.save(venda);
+	}
+	
 	public PDV adicionarProduto(Long vendaId, Produto produto, Integer quantidade) {
 		Optional<PDV> vendaOpt = pdvRepository.findById(vendaId);							//busco pelo id no banco	
 		if(vendaOpt.isPresent()) {															//verifico se ele de fato existe

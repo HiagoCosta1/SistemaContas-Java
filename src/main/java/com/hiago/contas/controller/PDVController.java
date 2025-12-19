@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.hiago.contas.domain.Cliente;
 import com.hiago.contas.domain.PDV;
 import com.hiago.contas.domain.Produto;
+import com.hiago.contas.domain.pagamento.Avista;
+import com.hiago.contas.domain.pagamento.Fiado;
 import com.hiago.contas.domain.pagamento.MeioDePagamento;
 import com.hiago.contas.domain.pagamento.StatusPagamento;
 import com.hiago.contas.service.ClienteService;
@@ -65,11 +67,20 @@ public class PDVController {
 	public ResponseEntity<PDV> criarVenda(@RequestBody NovaVendaRequest request){
 		Optional<Cliente> cliente = clienteService.buscarPorId(request.getClienteId());
 		if(cliente.isPresent()) {
-			MeioDePagamento meioDePagamento = new MeioDePagamento(request.getMdp(), StatusPagamento.PENDENTE);
+			MeioDePagamento meioDePagamento = criarMeioDePagamento(request.mdp);
 			PDV venda = pdvService.criarVenda(cliente.get(), meioDePagamento);
 			return ResponseEntity.status(HttpStatus.CREATED).body(venda);
 		}
 		return ResponseEntity.badRequest().build();
+	}
+	
+	private MeioDePagamento criarMeioDePagamento(String tipo) {
+		if (tipo.equalsIgnoreCase("AVISTA") || tipo.equalsIgnoreCase("À VISTA")) {
+			return new Avista();
+		} else if (tipo.equalsIgnoreCase("FIADO")) {
+			return new Fiado();
+		}
+		return new MeioDePagamento(tipo, StatusPagamento.PENDENTE);
 	}
 	
 	@PostMapping("/{id}/itens")
@@ -83,6 +94,24 @@ public class PDVController {
 			return ResponseEntity.badRequest().build();
 		}
 		catch(Exception e) {
+			return ResponseEntity.notFound().build();
+		}
+	}
+	
+	@PutMapping("/{id}/pagamento")
+	public ResponseEntity<PDV> atualizarPagamento(@PathVariable Long id) {
+		try {
+			PDV venda = pdvService.buscarPorId(id)
+				.orElseThrow(() -> new RuntimeException("Venda não encontrada"));
+			
+			// Atualiza o status do pagamento
+			venda.getMdp().atualizarStatusPagamento();
+			
+			// Salva a venda atualizada
+			PDV vendaAtualizada = pdvService.salvar(venda);
+			
+			return ResponseEntity.ok(vendaAtualizada);
+		} catch (Exception e) {
 			return ResponseEntity.notFound().build();
 		}
 	}

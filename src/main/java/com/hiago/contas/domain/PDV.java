@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.hiago.contas.domain.pagamento.MeioDePagamento;
 
 import jakarta.persistence.CascadeType;
