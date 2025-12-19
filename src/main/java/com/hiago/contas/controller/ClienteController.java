@@ -34,7 +34,7 @@ public class ClienteController {
 		return ResponseEntity.ok(clientes);
 	}
 	
-	@GetMapping("/{id")
+	@GetMapping("/{id}")
 	public ResponseEntity<Cliente> buscarPorId(@PathVariable Long id){
 		Optional<Cliente> cliente = clienteService.buscarPorId(id);
 		return cliente.map(ResponseEntity:: ok).orElse(ResponseEntity.notFound().build());

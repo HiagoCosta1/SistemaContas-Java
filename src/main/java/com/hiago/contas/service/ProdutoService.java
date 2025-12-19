@@ -25,7 +25,7 @@ public class ProdutoService {
 	}
 	
 	public List<Produto> buscarPorDescricao(String descricao){
-		return produtoRepository.findByDescricaoContainingIgonreCase(descricao);
+		return produtoRepository.findByDescricaoContainingIgnoreCase(descricao);
 	}
 	
 	public Produto salvar (Produto produto) {

@@ -20,6 +20,7 @@ import com.hiago.contas.domain.Cliente;
 import com.hiago.contas.domain.PDV;
 import com.hiago.contas.domain.Produto;
 import com.hiago.contas.domain.pagamento.MeioDePagamento;
+import com.hiago.contas.domain.pagamento.StatusPagamento;
 import com.hiago.contas.service.ClienteService;
 import com.hiago.contas.service.PDVService;
 import com.hiago.contas.service.ProdutoService;
@@ -64,12 +65,14 @@ public class PDVController {
 	public ResponseEntity<PDV> criarVenda(@RequestBody NovaVendaRequest request){
 		Optional<Cliente> cliente = clienteService.buscarPorId(request.getClienteId());
 		if(cliente.isPresent()) {
-			PDV venda = pdvService.criarVenda(cliente.get(), request.getMdp());
+			MeioDePagamento meioDePagamento = new MeioDePagamento(request.getMdp(), StatusPagamento.PENDENTE);
+			PDV venda = pdvService.criarVenda(cliente.get(), meioDePagamento);
 			return ResponseEntity.status(HttpStatus.CREATED).body(venda);
 		}
 		return ResponseEntity.badRequest().build();
 	}
 	
+	@PostMapping("/{id}/itens")
 	public ResponseEntity<PDV> adicionarProduto(@PathVariable Long id, @RequestBody ItemVendaRequest request){
 		try {
 			Optional<Produto> produto = produtoService.buscarPorId(request.getProdutoID());
@@ -110,17 +113,17 @@ public class PDVController {
 	
 	public static class NovaVendaRequest{
 		private Long clienteId;
-		private MeioDePagamento mdp;
+		private String mdp;
 		public Long getClienteId() {
 			return clienteId;
 		}
 		public void setClienteId(Long clienteId) {
 			this.clienteId = clienteId;
 		}
-		public MeioDePagamento getMdp() {
+		public String getMdp() {
 			return mdp;
 		}
-		public void setMdp(MeioDePagamento mdp) {
+		public void setMdp(String mdp) {
 			this.mdp = mdp;
 		}
 

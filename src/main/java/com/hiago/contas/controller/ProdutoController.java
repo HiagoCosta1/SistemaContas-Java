@@ -52,7 +52,7 @@ public class ProdutoController {
 		return ResponseEntity.status(HttpStatus.CREATED).body(novoProduto);
 	}
 	
-	@PutMapping
+	@PutMapping("/{id}")
 	public ResponseEntity<Produto> atualizar(@PathVariable Long id, @RequestBody Produto produto){
 		try {
 			Produto produtoAtualizado = produtoService.atualizar(id, produto);
@@ -63,7 +63,7 @@ public class ProdutoController {
 		}
 	}
 	
-	@DeleteMapping
+	@DeleteMapping("/{id}")
 	public ResponseEntity<Produto> deletar(@PathVariable Long id){
 		try {
 			produtoService.deletar(id);

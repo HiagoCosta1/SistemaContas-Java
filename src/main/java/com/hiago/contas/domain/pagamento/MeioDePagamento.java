@@ -1,9 +1,19 @@
 package com.hiago.contas.domain.pagamento;
 
-public abstract class  MeioDePagamento {
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 
-	protected String tipo;
-	protected StatusPagamento status;
+@Embeddable
+public class MeioDePagamento {
+
+	@Column(name = "tipo_pagamento", length = 50)
+	private String tipo;
+	
+	@Enumerated(EnumType.STRING)
+    @Column(name = "status_pagamento")
+	private StatusPagamento status;
 	
 	
 	public MeioDePagamento() {
@@ -49,7 +59,9 @@ public abstract class  MeioDePagamento {
                 '}';
 	}
 	
-	public abstract void atualizarStatusPagamento();
+	public void atualizarStatusPagamento() {
+		
+	}
 }
 
 

@@ -3,6 +3,8 @@ package com.hiago.contas.domain;
 import java.math.BigDecimal;
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -22,6 +24,7 @@ public class ItemVenda {
 	
 	@ManyToOne
 	@JoinColumn(name = "venda_id", nullable = false)
+	@JsonIgnore 
 	private PDV venda;
 	
 	@ManyToOne

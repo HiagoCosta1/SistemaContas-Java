@@ -10,5 +10,5 @@ import com.hiago.contas.domain.Produto;
 @Repository
 public interface ProdutoRepository extends JpaRepository<Produto, Long> {
 
-	List<Produto> findByDescricaoContainingIgonreCase(String descricao);
+	List<Produto> findByDescricaoContainingIgnoreCase(String descricao);
 }
