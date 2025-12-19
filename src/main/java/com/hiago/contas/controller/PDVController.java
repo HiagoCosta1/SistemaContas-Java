@@ -104,10 +104,8 @@ public class PDVController {
 			PDV venda = pdvService.buscarPorId(id)
 				.orElseThrow(() -> new RuntimeException("Venda não encontrada"));
 			
-			// Atualiza o status do pagamento
 			venda.getMdp().atualizarStatusPagamento();
 			
-			// Salva a venda atualizada
 			PDV vendaAtualizada = pdvService.salvar(venda);
 			
 			return ResponseEntity.ok(vendaAtualizada);
