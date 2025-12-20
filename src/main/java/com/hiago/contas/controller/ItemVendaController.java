@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.hiago.contas.domain.ItemVenda;
+import com.hiago.contas.dto.ItemVendaDTO;
+import com.hiago.contas.mapper.ItemVendaMapper;
 import com.hiago.contas.service.ItemVendaService;
 
 @RestController
@@ -23,27 +25,26 @@ public class ItemVendaController {
 	@Autowired
     private ItemVendaService itemVendaService;
 	
+	@Autowired
+	private ItemVendaMapper itemVendaMapper;
+	
 	@GetMapping
-    public ResponseEntity<List<ItemVenda>> listarTodos() {
+    public ResponseEntity<List<ItemVendaDTO>> listarTodos() {
         List<ItemVenda> itens = itemVendaService.buscarTodos();
-        return ResponseEntity.ok(itens);
+        return ResponseEntity.ok(itemVendaMapper.toDTOList(itens));
     }
 	
 	@GetMapping("/{id}")
-    public ResponseEntity<ItemVenda> buscarPorId(@PathVariable Long id) {
-        Optional<ItemVenda> item = itemVendaService.buscarPorId(id);
-        return item.map(ResponseEntity::ok)
-                   .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<ItemVendaDTO> buscarPorId(@PathVariable Long id) {
+       return itemVendaService.buscarPorId(id).map(itemVendaMapper:: toDTO).map(ResponseEntity:: ok).orElse(ResponseEntity.notFound().build());
     }
 	
 	@DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
-        try {
-            itemVendaService.deletar(id);
-            return ResponseEntity.noContent().build();
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+       return itemVendaService.buscarPorId(id).map(item -> {
+    	   itemVendaService.deletar(id);
+    	   return ResponseEntity.noContent().<Void>build();
+       }) .orElse(ResponseEntity.notFound().build());
     }
 
 }

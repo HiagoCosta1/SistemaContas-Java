@@ -1,5 +1,7 @@
 package com.hiago.contas.mapper;
 
+import java.util.List;
+
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
@@ -13,6 +15,8 @@ public interface UsuarioMapper {
 
 	@Mapping(target = "senha", ignore = true)
 	UsuarioDTO toDTO(Usuario usuario);
+	
+	List<UsuarioDTO> toDTOList(List<Usuario> usuario);
 	
 	Usuario toEntity(UsuarioDTO dto);
 	

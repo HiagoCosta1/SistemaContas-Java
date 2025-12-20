@@ -1,7 +1,6 @@
 package com.hiago.contas.controller;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.hiago.contas.domain.Produto;
+import com.hiago.contas.dto.ProdutoDTO;
+import com.hiago.contas.mapper.ProdutoMapper;
 import com.hiago.contas.service.ProdutoService;
 
 @RestController
@@ -27,50 +28,49 @@ public class ProdutoController {
 
 	@Autowired
 	private ProdutoService produtoService;
-	
+
+	@Autowired
+	private ProdutoMapper produtoMapper;
+
 	@GetMapping
-	public ResponseEntity<List<Produto>> listarTodos(){
+	public ResponseEntity<List<ProdutoDTO>> listarTodos() {
 		List<Produto> produtos = produtoService.buscarTodos();
-		return ResponseEntity.ok(produtos);
+		return ResponseEntity.ok(produtoMapper.toDTOList(produtos));
 	}
-	
+
 	@GetMapping("/{id}")
-	public ResponseEntity<Produto> buscarPorId(@PathVariable Long id){
-		Optional<Produto> produto = produtoService.buscarPorId(id);
-		return produto.map(ResponseEntity:: ok).orElse(ResponseEntity.notFound().build());
+	public ResponseEntity<ProdutoDTO> buscarPorId(@PathVariable Long id) {
+		return produtoService.buscarPorId(id).map(produtoMapper::toDTO).map(ResponseEntity::ok)
+				.orElse(ResponseEntity.notFound().build());
 	}
-	
+
 	@GetMapping("/buscar")
-    public ResponseEntity<List<Produto>> buscarPorDescricao(@RequestParam String descricao) {
-        List<Produto> produtos = produtoService.buscarPorDescricao(descricao);
-        return ResponseEntity.ok(produtos);
-    }
-	
+	public ResponseEntity<List<ProdutoDTO>> buscarPorDescricao(@RequestParam String descricao) {
+		List<Produto> produtos = produtoService.buscarPorDescricao(descricao);
+		return ResponseEntity.ok(produtoMapper.toDTOList(produtos));
+	}
+
 	@PostMapping
-	public ResponseEntity<Produto> criar(@RequestBody Produto produto){
+	public ResponseEntity<ProdutoDTO> criar(@RequestBody ProdutoDTO produtoDTO) {
+		Produto produto = produtoMapper.toEntity(produtoDTO);
 		Produto novoProduto = produtoService.salvar(produto);
-		return ResponseEntity.status(HttpStatus.CREATED).body(novoProduto);
+		return ResponseEntity.status(HttpStatus.CREATED).body(produtoMapper.toDTO(novoProduto));
 	}
-	
+
 	@PutMapping("/{id}")
-	public ResponseEntity<Produto> atualizar(@PathVariable Long id, @RequestBody Produto produto){
-		try {
-			Produto produtoAtualizado = produtoService.atualizar(id, produto);
-			return ResponseEntity.ok(produtoAtualizado);
-		}
-		catch (Exception e) {
-			return ResponseEntity.notFound().build();
-		}
+	public ResponseEntity<ProdutoDTO> atualizar(@PathVariable Long id, @RequestBody ProdutoDTO produtoDTO) {
+		return produtoService.buscarPorId(id).map(produtoExistente -> {
+			produtoMapper.updateEntityFromDTO(produtoDTO, produtoExistente);
+			Produto produtoAtualizado = produtoService.salvar(produtoExistente);
+			return ResponseEntity.ok(produtoMapper.toDTO(produtoAtualizado));
+		}).orElse(ResponseEntity.notFound().build());
 	}
-	
+
 	@DeleteMapping("/{id}")
-	public ResponseEntity<Produto> deletar(@PathVariable Long id){
-		try {
+	public ResponseEntity<Void> deletar(@PathVariable Long id) {
+		return produtoService.buscarPorId(id).map(produto -> {
 			produtoService.deletar(id);
-			return ResponseEntity.noContent().build();
-		}
-		catch (Exception e) {
-			return ResponseEntity.notFound().build();
-		}
+			return ResponseEntity.noContent().<Void>build();
+		}).orElse(ResponseEntity.notFound().build());
 	}
 }

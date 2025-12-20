@@ -1,7 +1,6 @@
 package com.hiago.contas.controller;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.hiago.contas.domain.Cliente;
+import com.hiago.contas.dto.ClienteDTO;
+import com.hiago.contas.mapper.ClienteMapper;
 import com.hiago.contas.service.ClienteService;
 
 
@@ -28,49 +29,46 @@ public class ClienteController {
 	@Autowired
 	private ClienteService clienteService;
 	
+	@Autowired
+	private ClienteMapper clienteMapper;
+	
 	@GetMapping
-	public ResponseEntity<List<Cliente>> listarTodos(){
+	public ResponseEntity<List<ClienteDTO>> listarTodos(){
 		List<Cliente> clientes = clienteService.buscarTodos();
-		return ResponseEntity.ok(clientes);
+		return ResponseEntity.ok(clienteMapper.toDTOList(clientes));
 	}
 	
 	@GetMapping("/{id}")
-	public ResponseEntity<Cliente> buscarPorId(@PathVariable Long id){
-		Optional<Cliente> cliente = clienteService.buscarPorId(id);
-		return cliente.map(ResponseEntity:: ok).orElse(ResponseEntity.notFound().build());
+	public ResponseEntity<ClienteDTO> buscarPorId(@PathVariable Long id){
+		return clienteService.buscarPorId(id).map(clienteMapper :: toDTO).map(ResponseEntity:: ok).orElse(ResponseEntity.notFound().build());
 	}
 	
 	@PostMapping
-	public ResponseEntity<Cliente> criar(@RequestBody Cliente cliente){
-		try {
-			Cliente novoCliente = clienteService.salvar(cliente);
-			return ResponseEntity.status(HttpStatus.CREATED).body(novoCliente);
-		}
-		catch (Exception e) {
-			return ResponseEntity.badRequest().build();
-		}
+	public ResponseEntity<ClienteDTO> criar(@RequestBody ClienteDTO clienteDTO){
+		Cliente cliente = clienteMapper.toEntity(clienteDTO);
+		Cliente novoCliente = clienteService.salvar(cliente);
+		return ResponseEntity.status(HttpStatus.CREATED).body(clienteMapper.toDTO(novoCliente));
 	}
 	
 	@PutMapping("/{id}")
-	public ResponseEntity<Cliente> atualizar(@PathVariable Long id, @RequestBody Cliente cliente){
-		try {
-			Cliente clienteAtualizado = clienteService.atualizar(id, cliente);
-			return ResponseEntity.ok(clienteAtualizado);
-		}
-		catch (Exception e) {
-			return ResponseEntity.notFound().build();
-		}
+	public ResponseEntity<ClienteDTO> atualizar(@PathVariable Long id, @RequestBody ClienteDTO clienteDTO) {
+		return clienteService.buscarPorId(id)
+			.map(clienteExistente -> {
+				clienteMapper.updateEntityFromDTO(clienteDTO, clienteExistente);
+				Cliente clienteAtualizado = clienteService.salvar(clienteExistente);
+				return ResponseEntity.ok(clienteMapper.toDTO(clienteAtualizado));
+			})
+			.orElse(ResponseEntity.notFound().build());
 	}
 	
 	@DeleteMapping("/{id}")
-	public ResponseEntity<Cliente> deletar(@PathVariable Long id){
-		try {
-			clienteService.deletar(id);
-			return ResponseEntity.noContent().build();
-		}
-		catch(Exception e) {
-			return ResponseEntity.notFound().build();
-		}
+	public ResponseEntity<Void> deletar(@PathVariable Long id) {
+		return clienteService.buscarPorId(id)
+			.map(cliente -> {
+				clienteService.deletar(id);
+				return ResponseEntity.noContent().<Void>build();
+			})
+			.orElse(ResponseEntity.notFound().build());
 	}
 
 }
