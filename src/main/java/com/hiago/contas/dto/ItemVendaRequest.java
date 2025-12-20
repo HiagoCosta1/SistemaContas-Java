@@ -1,5 +1,7 @@
 package com.hiago.contas.dto;
 
-public record ItemVendaRequest() {
+public record ItemVendaRequest(
+		Long produtoID,
+		Integer quantidade) {
 
 }
