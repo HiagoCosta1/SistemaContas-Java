@@ -27,6 +27,8 @@ import com.hiago.contas.service.ClienteService;
 import com.hiago.contas.service.PDVService;
 import com.hiago.contas.service.ProdutoService;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api/vendas")
 @CrossOrigin(origins = "*")
@@ -69,7 +71,7 @@ public class PDVController {
 	}
 	
 	@PostMapping
-	public ResponseEntity<VendaDTO> criarVenda(@RequestBody NovaVendaRequest request) {
+	public ResponseEntity<VendaDTO> criarVenda(@Valid @RequestBody NovaVendaRequest request) {
 		return clienteService.buscarPorId(request.clienteId())
 			.map(cliente -> {
 				MeioDePagamento mdp = criarMeioDePagamento(request.mdp());
@@ -80,7 +82,7 @@ public class PDVController {
 	}
 	
 	@PostMapping("/{id}/itens")
-	public ResponseEntity<VendaDTO> adicionarProduto(@PathVariable Long id, @RequestBody ItemVendaRequest request) {
+	public ResponseEntity<VendaDTO> adicionarProduto(@PathVariable Long id, @Valid @RequestBody ItemVendaRequest request) {
 		try {
 			return produtoService.buscarPorId(request.produtoID())
 				.map(produto -> {

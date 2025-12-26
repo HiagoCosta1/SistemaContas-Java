@@ -20,6 +20,8 @@ import com.hiago.contas.dto.ClienteDTO;
 import com.hiago.contas.mapper.ClienteMapper;
 import com.hiago.contas.service.ClienteService;
 
+import jakarta.validation.Valid;
+
 
 @RestController
 @RequestMapping("/api/clientes")
@@ -44,14 +46,14 @@ public class ClienteController {
 	}
 	
 	@PostMapping
-	public ResponseEntity<ClienteDTO> criar(@RequestBody ClienteDTO clienteDTO){
+	public ResponseEntity<ClienteDTO> criar(@Valid @RequestBody ClienteDTO clienteDTO){
 		Cliente cliente = clienteMapper.toEntity(clienteDTO);
 		Cliente novoCliente = clienteService.salvar(cliente);
 		return ResponseEntity.status(HttpStatus.CREATED).body(clienteMapper.toDTO(novoCliente));
 	}
 	
 	@PutMapping("/{id}")
-	public ResponseEntity<ClienteDTO> atualizar(@PathVariable Long id, @RequestBody ClienteDTO clienteDTO) {
+	public ResponseEntity<ClienteDTO> atualizar(@PathVariable Long id,@Valid @RequestBody ClienteDTO clienteDTO) {
 		return clienteService.buscarPorId(id)
 			.map(clienteExistente -> {
 				clienteMapper.updateEntityFromDTO(clienteDTO, clienteExistente);

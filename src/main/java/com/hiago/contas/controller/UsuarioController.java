@@ -21,6 +21,8 @@ import com.hiago.contas.dto.UsuarioDTO;
 import com.hiago.contas.mapper.UsuarioMapper;
 import com.hiago.contas.service.UsuarioService;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api/usuarios")
 @CrossOrigin(origins = "*")
@@ -44,14 +46,14 @@ public class UsuarioController {
 	}
 
 	@PostMapping
-	private ResponseEntity<UsuarioDTO> criar(@RequestBody UsuarioDTO usuarioDTO) {
+	private ResponseEntity<UsuarioDTO> criar(@Valid @RequestBody UsuarioDTO usuarioDTO) {
 		Usuario usuario = usuarioMapper.toEntity(usuarioDTO);
 		Usuario novoUsuario = usuarioService.salvar(usuario);
 		return ResponseEntity.status(HttpStatus.CREATED).body(usuarioMapper.toDTO(novoUsuario));
 	}
 
 	@PutMapping
-	private ResponseEntity<UsuarioDTO> atualizar(@PathVariable Long id, @RequestBody UsuarioDTO usuarioDTO) {
+	private ResponseEntity<UsuarioDTO> atualizar(@PathVariable Long id,@Valid @RequestBody UsuarioDTO usuarioDTO) {
 		return usuarioService.buscarPorId(id).map(UsuarioExistente -> {
 			usuarioMapper.updateEntityFromDTO(usuarioDTO, UsuarioExistente);
 			Usuario usuarioAtualizado = usuarioService.salvar(UsuarioExistente);

@@ -21,6 +21,8 @@ import com.hiago.contas.dto.ProdutoDTO;
 import com.hiago.contas.mapper.ProdutoMapper;
 import com.hiago.contas.service.ProdutoService;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api/produtos")
 @CrossOrigin(origins = "*")
@@ -51,14 +53,14 @@ public class ProdutoController {
 	}
 
 	@PostMapping
-	public ResponseEntity<ProdutoDTO> criar(@RequestBody ProdutoDTO produtoDTO) {
+	public ResponseEntity<ProdutoDTO> criar(@Valid @RequestBody ProdutoDTO produtoDTO) {
 		Produto produto = produtoMapper.toEntity(produtoDTO);
 		Produto novoProduto = produtoService.salvar(produto);
 		return ResponseEntity.status(HttpStatus.CREATED).body(produtoMapper.toDTO(novoProduto));
 	}
 
 	@PutMapping("/{id}")
-	public ResponseEntity<ProdutoDTO> atualizar(@PathVariable Long id, @RequestBody ProdutoDTO produtoDTO) {
+	public ResponseEntity<ProdutoDTO> atualizar(@PathVariable Long id,@Valid @RequestBody ProdutoDTO produtoDTO) {
 		return produtoService.buscarPorId(id).map(produtoExistente -> {
 			produtoMapper.updateEntityFromDTO(produtoDTO, produtoExistente);
 			Produto produtoAtualizado = produtoService.salvar(produtoExistente);
