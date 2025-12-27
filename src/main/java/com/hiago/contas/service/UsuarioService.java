@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.hiago.contas.domain.Usuario;
+import com.hiago.contas.exception.BusinessException;
+import com.hiago.contas.exception.ResourceNotFoundException;
 import com.hiago.contas.repository.UsuarioRepository;
 
 @Service
@@ -24,36 +26,38 @@ public class UsuarioService {
 		return usuarioRepository.findById(id);
 	}
 	
+	public Usuario buscarPorIdOuLancarErro(Long id) {
+		return usuarioRepository.findById(id).orElseThrow(()-> new ResourceNotFoundException("Usuario com ID " + id +  "não encontrado"));
+	}
+	
 	public Optional<Usuario> buscarPorEmail(String email){
 		return usuarioRepository.findByEmail(email);
 	}
 	
 	public Usuario salvar(Usuario usuario) {
 		if(usuario.getId() == null && usuarioRepository.existsByEmail(usuario.getEmail())) {
-			throw new RuntimeException("Email ja cadastrado");
+			throw new BusinessException("Já existe um usuario cadastrado com o email: " + usuario.getEmail());
 		}
 		return usuarioRepository.save(usuario);
 	}
 	
-	public Usuario atualizar(Long id, Usuario usuarioAtualizado) {
-		Optional<Usuario> usuarioExistente = usuarioRepository.findById(id);						//puxar o id no banco e pegar e transformar em Optional<Usuario> 
-		if(usuarioExistente.isPresent()) {															//verificar se esse usuario criado tem de fato
-			Usuario usuario = usuarioExistente.get();												//usar o metodo get do Optional para pegar as informacões e colocar no usuario
-			usuario.setNome(usuarioAtualizado.getNome());											//usar o get no usuarioAtualizado e setar elas no usuario criado
-			usuario.setEmail(usuarioAtualizado.getEmail());					
-			if(usuarioAtualizado.getSenha() != null && !usuarioAtualizado.getSenha().isEmpty()) {	//só atualiza a senha se ela foi fornecida
-				usuario.setSenha(usuarioAtualizado.getSenha());
-			}
-			return usuarioRepository.save(usuario);
+	public Usuario atualizar(Long id, Usuario usuario) {
+		Usuario usuarioExistente = buscarPorIdOuLancarErro(id);
+		
+		if(!usuarioExistente.getEmail().equals(usuario.getEmail())&& usuarioRepository.existsByEmail(usuario.getEmail())) {
+			throw new BusinessException("Já existe outro usuario com o email: " + usuario.getEmail());
 		}
-		throw new RuntimeException("Usuario nao encontrado!");
+		
+		usuarioExistente.setNome(usuario.getNome());
+		usuarioExistente.setEmail(usuario.getEmail());
+		
+		return usuarioRepository.save(usuarioExistente);
+		
 	}
 	
 	public void deletar(Long id) {
-		if(!usuarioRepository.existsById(id)) {
-			throw new RuntimeException("Usuario nao encontrado!");
-		}
-		usuarioRepository.deleteById(id);
+		Usuario usuario = buscarPorIdOuLancarErro(id);
+		usuarioRepository.delete(usuario);
 	}
 	
 	
@@ -65,5 +69,30 @@ public class UsuarioService {
 		}
 		return Optional.empty();													//se não retorna o Optional vazio
 	}		
+	
+	
+	public void alterarSenha(Long id, String senhaAtual, String novaSenha) {
+		Usuario usuario = buscarPorIdOuLancarErro(id);
+		
+		// Validação: senha atual está correta?
+		if (!usuario.getSenha().equals(senhaAtual)) {
+			throw new BusinessException("Senha atual incorreta");
+		}
+		
+		// Validação: nova senha não pode ser igual à atual
+		if (senhaAtual.equals(novaSenha)) {
+			throw new BusinessException("A nova senha deve ser diferente da senha atual");
+		}
+		
+		// Validação: tamanho mínimo
+		if (novaSenha.length() < 6) {
+			throw new BusinessException("A nova senha deve ter no mínimo 6 caracteres");
+		}
+		
+		
+		usuario.setSenha(novaSenha);
+		usuarioRepository.save(usuario);
+	}
+	
 
 }

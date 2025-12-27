@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.hiago.contas.domain.Produto;
+import com.hiago.contas.exception.BusinessException;
+import com.hiago.contas.exception.ResourceNotFoundException;
 import com.hiago.contas.repository.ProdutoRepository;
 
 @Service
@@ -24,32 +26,37 @@ public class ProdutoService {
 		return produtoRepository.findById(id);
 	}
 	
+	public Produto buscarPorIdOuLancarErro(Long id) {
+		return produtoRepository.findById(id).orElseThrow(()-> new ResourceNotFoundException("Produto com ID" + id + "não encontrado"));
+	}
+	
 	public List<Produto> buscarPorDescricao(String descricao){
 		return produtoRepository.findByDescricaoContainingIgnoreCase(descricao);
 	}
 	
 	public Produto salvar (Produto produto) {
+		if(produto.getId() == null && produtoRepository.existsByDescricaoIgnoreCase(produto.getDescricao())) {
+			throw new BusinessException("Já existe um produto com a descrição: " + produto.getDescricao());
+		}
 		return produtoRepository.save(produto);
 	}
 	
-	public Produto atualizar(Long id, Produto produtoAtualizado) {
-		Optional<Produto> ProdutoExistente = produtoRepository.findById(id);
-		if(ProdutoExistente.isPresent()) {
-			Produto produto = ProdutoExistente.get();
-			produto.setDescricao(produtoAtualizado.getDescricao());
-			produto.setPreco(produtoAtualizado.getPreco());
-			return produtoRepository.save(produto);
-		}
-		throw new RuntimeException("Produto nao encontrado");
+	public Produto atualizar(Long id, Produto produto) {
+		Produto produtoExistente = buscarPorIdOuLancarErro(id);
 		
+		if (!produtoExistente.getDescricao().equalsIgnoreCase(produto.getDescricao()) && produtoRepository.existsByDescricaoIgnoreCase(produto.getDescricao())) {
+			throw new BusinessException("Já existe outro produto com essa descrição: " + produto.getDescricao());
+		}
+		
+		produtoExistente.setDescricao(produto.getDescricao());
+		produtoExistente.setPreco(produto.getPreco());
+		
+		return produtoRepository.save(produtoExistente);
 	}
 	
 	public void deletar(Long id) {
-		if(!produtoRepository.existsById(id)) {
-			throw new RuntimeException("Produto nao encontrado");
-		}
-		produtoRepository.deleteById(id);
-		
+		Produto produto = buscarPorIdOuLancarErro(id);
+		produtoRepository.delete(produto);
 	}
 	
 }

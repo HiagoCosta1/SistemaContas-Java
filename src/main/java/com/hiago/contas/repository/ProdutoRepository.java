@@ -11,4 +11,5 @@ import com.hiago.contas.domain.Produto;
 public interface ProdutoRepository extends JpaRepository<Produto, Long> {
 
 	List<Produto> findByDescricaoContainingIgnoreCase(String descricao);
+	boolean existsByDescricaoIgnoreCase(String descricao);
 }

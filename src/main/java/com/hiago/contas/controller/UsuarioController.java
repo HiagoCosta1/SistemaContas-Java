@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.hiago.contas.domain.Usuario;
+import com.hiago.contas.dto.AlterarSenhaRequest;
 import com.hiago.contas.dto.UsuarioDTO;
 import com.hiago.contas.mapper.UsuarioMapper;
 import com.hiago.contas.service.UsuarioService;
@@ -60,6 +61,14 @@ public class UsuarioController {
 			return ResponseEntity.ok(usuarioMapper.toDTO(usuarioAtualizado));
 		}).orElse(ResponseEntity.notFound().build());
 	}
+	
+	@PutMapping("/{id}/alterar-senha")
+	public ResponseEntity<Void> alterarSenha(
+			@PathVariable Long id, 
+			@Valid @RequestBody AlterarSenhaRequest request) {
+		usuarioService.alterarSenha(id, request.senhaAtual(), request.novaSenha());
+		return ResponseEntity.noContent().build();
+	}	
 
 	@DeleteMapping("/{id}")
 	public ResponseEntity<Void> deletar(@PathVariable Long id) {

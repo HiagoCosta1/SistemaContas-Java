@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.hiago.contas.domain.Cliente;
+import com.hiago.contas.exception.BusinessException;
+import com.hiago.contas.exception.ResourceNotFoundException;
 import com.hiago.contas.repository.ClienteRepository;
 
 @Service
@@ -25,29 +27,38 @@ public class ClienteService {
 		return clienteRepository.findById(id);
 	}
 	
+	public Cliente buscarPorIdOuLancarErro(Long id) {
+		return clienteRepository.findById(id).orElseThrow(()-> new ResourceNotFoundException("Cliente com ID" + id + "não encontrado"));
+	}
+	
 	//salvar cliente
 	public Cliente salvar(Cliente cliente) {
+		if (cliente.getId() == null && clienteRepository.existsByEmail(cliente.getEmail())){
+			throw new BusinessException("Ja existe um cliente cadastrado com o email: " + cliente.getEmail());
+		}
 		return clienteRepository.save(cliente);
 	}
+	
 	//atualizar o cliente
 	public Cliente atualizar (Long id, Cliente clienteAtualizado) {
-		Optional<Cliente> clienteExistente = clienteRepository.findById(id);	//Crio um Optional <Cliente> que pode ou não ter um cliente e me obriga a tratar caso não tenha nenhum objeto
-		if(clienteExistente.isPresent()) {										//uso o metedo isPresent do Optional, para verificar se esse cliente existe mesmo
-			Cliente cliente = clienteExistente.get();							//uso o metodo get do Optional para pegar os dados e colocar na variavel cliente
-			cliente.setNome(clienteAtualizado.getNome());						//vou pegando os dados do clienteAtualizado com o get, e vou dando set para colocar nessa variavel cliente
-			cliente.setEmail(clienteAtualizado.getEmail());
-			cliente.setTelefone(clienteAtualizado.getTelefone());
-			return clienteRepository.save(cliente);								//depois eu salvo no banco usando o .save e uso esse cliente que eu setei as informcaçÕes
+		Cliente cliente = buscarPorIdOuLancarErro(id);
+		
+		if(!cliente.getEmail().equals(clienteAtualizado.getEmail()) && clienteRepository.existsByEmail(clienteAtualizado.getEmail())){
+			throw new BusinessException("Já existe outro cliente com o email" + clienteAtualizado.getEmail());
 		}
-		throw new RuntimeException("Cliente nao encontrado");
+		
+		cliente.setNome(clienteAtualizado.getNome());
+		cliente.setEmail(clienteAtualizado.getEmail());
+		cliente.setTelefone(clienteAtualizado.getTelefone());
+		
+		return clienteRepository.save(cliente);
 	}
 	
 	//Deletar o cliente
 	public void deletar(Long id) {
-		if(!clienteRepository.existsById(id)) {
-			throw new RuntimeException("Cliente nao encontrado!");
-		}
-		clienteRepository.deleteById(id);
+		
+		Cliente cliente = buscarPorIdOuLancarErro(id);
+		clienteRepository.delete(cliente);
 	}
 	
 	

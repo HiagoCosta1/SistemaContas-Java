@@ -11,65 +11,97 @@ import com.hiago.contas.domain.Cliente;
 import com.hiago.contas.domain.PDV;
 import com.hiago.contas.domain.Produto;
 import com.hiago.contas.domain.pagamento.MeioDePagamento;
+import com.hiago.contas.exception.BusinessException;
+import com.hiago.contas.exception.ResourceNotFoundException;
 import com.hiago.contas.repository.PDVRepository;
 
 @Service
 public class PDVService {
-	
+
 	@Autowired
 	private PDVRepository pdvRepository;
-	
-	public List<PDV> buscarTodos(){
+
+	public List<PDV> buscarTodos() {
 		return pdvRepository.findAll();
 	}
-	
-	public Optional<PDV> buscarPorId(Long id){
+
+	public Optional<PDV> buscarPorId(Long id) {
 		return pdvRepository.findById(id);
 	}
-	
-	public List<PDV> buscarPorCliente(Cliente cliente){
-		return pdvRepository.findByCliente(cliente);
-	}
-	
-	public List<PDV> buscaPorPeriodo(LocalDateTime inicio, LocalDateTime fim){
-		return pdvRepository.findByDataHoraBetween(inicio, fim);
-	}
-	
-	public PDV criarVenda(Cliente cliente, MeioDePagamento mdp) {					
-		PDV venda = new PDV(cliente, mdp);													//instancio uma nova venda
-		return pdvRepository.save(venda);													// salvo ela no banco
-	}
-	
-	public PDV salvar(PDV venda) {
-	    return pdvRepository.save(venda);
-	}
-	
-	public PDV adicionarProduto(Long vendaId, Produto produto, Integer quantidade) {
-		Optional<PDV> vendaOpt = pdvRepository.findById(vendaId);							//busco pelo id no banco	
-		if(vendaOpt.isPresent()) {															//verifico se ele de fato existe
-			PDV venda = vendaOpt.get();														//pego as informações e adiciono em uma variavel venda	
-			venda.adicionarProduto(produto, quantidade);									//uso o metodo adicionarProduto para colocar o produto e quantidade na venda
-			return pdvRepository.save(venda);		
-		}
-		throw new RuntimeException("Venda nao encontrada!");
-	}
-	
-	
-	public PDV finalizarVenda(Long vendaId) {
-		Optional<PDV> vendaOpt = pdvRepository.findById(vendaId);
-		if(vendaOpt.isPresent()) {	
-			PDV venda = vendaOpt.get();														
-			venda.calcularTotal();															//faço o processo de buscar a venda pelo id e depois uso o metodo calcularTotal para salvar na venda
-			return pdvRepository.save(venda);
-		}
-		throw new RuntimeException("Venda nao encontrada!");
-	}
-	
-	public void deletar(Long id) {
-		if(!pdvRepository.existsById(id)) {
-			throw new RuntimeException("Venda nao encontrada!");
-		}
-		pdvRepository.deleteById(id);
+
+	public PDV buscarPorIdOuLancarErro(Long id) {
+		return pdvRepository.findById(id)
+				.orElseThrow(() -> new ResourceNotFoundException("Venda com ID " + id + " não encontrada"));
 	}
 
+	public List<PDV> buscarPorCliente(Cliente cliente) {
+		if (cliente == null) {
+			throw new BusinessException("Cliente não pode ser nulo");
+		}
+		return pdvRepository.findByCliente(cliente);
+	}
+
+	public List<PDV> buscaPorPeriodo(LocalDateTime inicio, LocalDateTime fim) {
+		if (inicio == null || fim == null) {
+			throw new BusinessException("Data de inicio e fim são obrigatórias");
+		}
+
+		if (inicio.isAfter(fim)) {
+			throw new BusinessException("Data de inicio não pode ser posterior à data de fim");
+		}
+
+		return pdvRepository.findByDataHoraBetween(inicio, fim);
+	}
+
+	public PDV criarVenda(Cliente cliente, MeioDePagamento mdp) {
+		if (cliente == null) {
+			throw new BusinessException("CLiente é obrigatório para criar uma venda");
+		}
+
+		if (mdp == null) {
+			throw new BusinessException("Meio de pagamento é obrigatório");
+		}
+
+		PDV venda = new PDV(cliente, mdp);
+		return pdvRepository.save(venda);
+	}
+
+	public PDV salvar(PDV venda) {
+		if (venda == null) {
+			throw new BusinessException("Venda não pode ser nula");
+		}
+		return pdvRepository.save(venda);
+	}
+
+	public PDV adicionarProduto(Long vendaId, Produto produto, Integer quantidade) {
+		PDV venda = buscarPorIdOuLancarErro(vendaId);
+
+		if (produto == null) {
+			throw new BusinessException("Produto não pode ser nulo");
+		}
+
+		if (quantidade == null || quantidade <= 0) {
+			throw new BusinessException("Quantidade deve ser maior que zero");
+		}
+
+		venda.adicionarProduto(produto, quantidade);
+		return pdvRepository.save(venda);
+	}
+
+	public PDV finalizarVenda(Long vendaId) {
+		PDV venda = buscarPorIdOuLancarErro(vendaId);
+
+		if (venda.getItens() == null || venda.getItens().isEmpty()) {
+			throw new BusinessException("Não é possivel finalizar uma venda sem itens");
+		}
+
+		venda.calcularTotal();
+		return pdvRepository.save(venda);
+	}
+
+	public void deletar(Long id) {
+		PDV venda = buscarPorIdOuLancarErro(id);
+		pdvRepository.delete(venda);
+
+	}
 }
